@@ -1,0 +1,103 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class TicTacToe extends JFrame implements ActionListener {
+    private JButton[] buttons = new JButton[9];
+    private boolean xTurn = true;
+
+    public TicTacToe() {
+        setTitle("Tic Tac Toe");
+        setLayout(new GridLayout(3, 3));
+        setSize(400, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Initialize buttons and add them to the frame
+        for (int i = 0; i < 9; i++) {
+            buttons[i] = new JButton("");
+            buttons[i].setFont(new Font("Arial", Font.BOLD, 60));
+            buttons[i].addActionListener(this);
+            add(buttons[i]);
+        }
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        JButton clickedButton = (JButton) e.getSource();
+        // Ignore click if button already has a value
+        if (!clickedButton.getText().equals("")) return;
+
+        clickedButton.setText(xTurn ? "X" : "O");
+        xTurn = !xTurn;
+        checkForWin();
+    }
+
+    private void checkForWin() {
+        String[][] board = new String[3][3];
+        for (int i = 0; i < 9; i++) {
+            board[i / 3][i % 3] = buttons[i].getText();
+        }
+        
+        // Check rows and columns for a win
+        for (int i = 0; i < 3; i++) {
+            if (board[i][0].equals(board[i][1]) && board[i][1].equals(board[i][2]) && !board[i][0].equals("")) {
+                gameOver(board[i][0]);
+                return;
+            }
+            if (board[0][i].equals(board[1][i]) && board[1][i].equals(board[2][i]) && !board[0][i].equals("")) {
+                gameOver(board[0][i]);
+                return;
+            }
+        }
+        
+        // Check diagonals for a win
+        if (board[0][0].equals(board[1][1]) && board[1][1].equals(board[2][2]) && !board[0][0].equals("")) {
+            gameOver(board[0][0]);
+            return;
+        }
+        if (board[0][2].equals(board[1][1]) && board[1][1].equals(board[2][0]) && !board[0][2].equals("")) {
+            gameOver(board[0][2]);
+            return;
+        }
+        
+        // Check for draw
+        boolean draw = true;
+        for (JButton b : buttons) {
+            if (b.getText().equals("")) {
+                draw = false;
+                break;
+            }
+        }
+        if (draw) {
+            gameOver("Draw");
+        }
+    }
+
+    private void gameOver(String winner) {
+        String message = winner.equals("Draw") ? "Game is a Draw!" : "Player " + winner + " wins!";
+        JOptionPane.showMessageDialog(this, message);
+        int option = JOptionPane.showConfirmDialog(this, "Play again?", "Game Over", JOptionPane.YES_NO_OPTION);
+        if (option == JOptionPane.YES_OPTION) {
+            resetBoard();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    private void resetBoard() {
+        for (JButton b : buttons) {
+            b.setText("");
+        }
+        xTurn = true;
+    }
+
+    public static void main(String[] args) {
+        // Check for headless mode (no display available)
+        if (GraphicsEnvironment.isHeadless()) {
+            System.err.println("Error: No graphical environment detected. Please run this program on a system with display support.");
+            System.exit(1);
+        }
+        SwingUtilities.invokeLater(() -> new TicTacToe());
+    }
+}
